@@ -1,0 +1,293 @@
+:root {
+  color: #eff3e3;
+  background: #11140f;
+  font-family: Arial, Helvetica, sans-serif;
+  font-synthesis: none;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+.panel,
+.settings-page {
+  background: linear-gradient(135deg, rgb(204 255 0 / 12%), transparent 42%),
+    #11140f;
+}
+
+.panel {
+  width: 320px;
+  min-height: 300px;
+  padding: 28px;
+}
+
+.settings-page {
+  min-height: 100vh;
+  padding: 72px max(32px, calc((100vw - 680px) / 2));
+}
+
+.header {
+  max-width: 560px;
+}
+
+.eyebrow {
+  margin: 0 0 16px;
+  color: #c9ff00;
+  font-family: "Arial Narrow", Arial, sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+}
+
+h1 {
+  max-width: 440px;
+  margin: 0;
+  font-size: clamp(32px, 6vw, 52px);
+  font-weight: 700;
+  letter-spacing: -0.065em;
+  line-height: 0.93;
+}
+
+.intro {
+  max-width: 500px;
+  margin: 24px 0 0;
+  color: #bec4b3;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.toggle-row,
+.filter-summary,
+.rule-section {
+  display: flex;
+  border-top: 1px solid #3b4035;
+}
+
+.toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 52px;
+  padding: 18px 0;
+}
+
+strong,
+small {
+  display: block;
+}
+
+strong {
+  color: #f8faef;
+  font-size: 15px;
+}
+
+small,
+.footnote,
+.saved-status {
+  color: #9da395;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+small {
+  margin-top: 4px;
+}
+
+input[type="checkbox"] {
+  position: relative;
+  width: 42px;
+  height: 24px;
+  margin: 0;
+  appearance: none;
+  cursor: pointer;
+  border: 1px solid #5c6255;
+  border-radius: 999px;
+  background: #24291f;
+}
+
+input[type="checkbox"]::after {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 16px;
+  height: 16px;
+  content: "";
+  border-radius: 50%;
+  background: #aab0a1;
+  transition: transform 140ms ease, background 140ms ease;
+}
+
+input[type="checkbox"]:checked {
+  border-color: #c9ff00;
+  background: #567000;
+}
+
+input[type="checkbox"]:checked::after {
+  transform: translateX(18px);
+  background: #f6ffe1;
+}
+
+.filter-summary {
+  display: block;
+  margin-top: 26px;
+  padding-top: 18px;
+}
+
+.filter-summary .eyebrow {
+  margin-bottom: 8px;
+}
+
+.settings-link {
+  display: inline-block;
+  margin-top: 24px;
+  color: #c9ff00;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.settings-link:hover {
+  color: #f0ffb0;
+}
+
+.filter-section {
+  max-width: 560px;
+  margin-top: 56px;
+  padding-top: 24px;
+  border-top: 1px solid #3b4035;
+}
+
+.filter-section h2,
+.rule-section h2 {
+  margin: 0;
+  color: #f8faef;
+  font-size: 20px;
+  letter-spacing: -0.03em;
+}
+
+.filter-section > p:last-child,
+.rule-section > p {
+  margin: 8px 0 0;
+  color: #bec4b3;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.filter-section .eyebrow {
+  margin-bottom: 10px;
+}
+
+.rule-section {
+  max-width: 560px;
+  margin-top: 36px;
+  padding-top: 24px;
+}
+
+.channel-form {
+  display: flex;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+input[type="text"] {
+  min-width: 0;
+  flex: 1;
+  border: 1px solid #4e5447;
+  border-radius: 0;
+  background: #181c15;
+  color: #f8faef;
+  font: inherit;
+  font-size: 14px;
+  padding: 11px 12px;
+}
+
+input[type="text"]:focus {
+  outline: 1px solid #c9ff00;
+  outline-offset: 2px;
+}
+
+button {
+  cursor: pointer;
+  border: 1px solid #c9ff00;
+  border-radius: 0;
+  background: #c9ff00;
+  color: #11140f;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 0 16px;
+}
+
+button:hover {
+  background: #efffa2;
+}
+
+.rule-list {
+  display: grid;
+  gap: 8px;
+  margin: 16px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.rule-list:empty::before {
+  content: "No personal rules yet.";
+  color: #9da395;
+  font-size: 12px;
+}
+
+.rule-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: #181c15;
+  padding: 9px 10px;
+}
+
+.rule-list code {
+  overflow: hidden;
+  color: #cfd4c5;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rule-list button {
+  border-color: #4e5447;
+  background: transparent;
+  color: #cfd4c5;
+  padding: 5px 8px;
+}
+
+.rule-list button:hover {
+  border-color: #cfd4c5;
+  color: #f8faef;
+}
+
+.saved-status {
+  max-width: 560px;
+  min-height: 20px;
+  margin: 24px 0 0;
+  color: #c9ff00;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+@media (max-width: 520px) {
+  .settings-page {
+    padding-top: 48px;
+  }
+}

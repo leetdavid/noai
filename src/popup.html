@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NoAI</title>
+  </head>
+  <body>
+    <main class="panel">
+      <header class="header">
+        <p class="eyebrow">NOAI / FILTERS</p>
+        <h1>A quieter web.</h1>
+      </header>
+
+      <label class="toggle-row" for="enabled">
+        <span>
+          <strong>Filters</strong>
+          <small id="status">Loading protection status</small>
+        </span>
+        <input id="enabled" type="checkbox" role="switch" />
+      </label>
+
+      <section class="filter-summary" aria-label="Active filter">
+        <p class="eyebrow">ACTIVE FILTER</p>
+        <strong>YouTube channels</strong>
+        <small>Maintainer catalogue and personal rules.</small>
+      </section>
+      <a class="settings-link" href="options.html" target="_blank">Filter settings</a>
+    </main>
+    <script type="module" src="./popup.ts"></script>
+  </body>
+</html>

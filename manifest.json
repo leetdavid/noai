@@ -1,0 +1,30 @@
+{
+  "manifest_version": 3,
+  "name": "NoAI",
+  "version": "0.1.0",
+  "description": "Block low-signal AI-generated content across the web.",
+  "permissions": ["storage"],
+  "host_permissions": ["https://api.noai.eslee.io/*"],
+  "background": {
+    "service_worker": "src/background.ts",
+    "type": "module"
+  },
+  "action": {
+    "default_title": "NoAI",
+    "default_popup": "src/popup.html"
+  },
+  "options_page": "src/options.html",
+  "content_scripts": [
+    {
+      "matches": ["*://*.youtube.com/*", "*://youtube.com/*"],
+      "js": ["src/content.ts"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["*://*.youtube.com/*", "*://youtube.com/*"],
+      "js": ["src/youtube-main.ts"],
+      "run_at": "document_idle",
+      "world": "MAIN"
+    }
+  ]
+}

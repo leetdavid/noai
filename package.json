@@ -1,0 +1,24 @@
+{
+  "name": "noai",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A Chrome extension for blocking AI slop on the internet.",
+  "type": "module",
+  "scripts": {
+    "build": "pnpm build:extension && pnpm build:api",
+    "build:api": "pnpm --filter @noai/api build",
+    "build:extension": "tsc --noEmit && vite build",
+    "check": "biome check . && tsc --noEmit && pnpm --filter @noai/api typecheck",
+    "check:fix": "biome check --write .",
+    "dev": "vite build --watch",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.9.4",
+    "@crxjs/vite-plugin": "^2.0.0-beta.25",
+    "@types/chrome": "^0.0.280",
+    "typescript": "^5.7.2",
+    "vite": "^6.0.1",
+    "vitest": "^5.0.0"
+  }
+}

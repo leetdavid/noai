@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NoAI filters</title>
+  </head>
+  <body>
+    <main class="settings-page">
+      <header class="header">
+        <p class="eyebrow">NOAI / FILTERS</p>
+        <h1>Choose what stays out.</h1>
+        <p class="intro">YouTube channels is NoAI's first filter. Future filters will arrive separately and stay off until you choose them.</p>
+      </header>
+
+      <section class="filter-section" aria-labelledby="youtube-channels-heading">
+        <p class="eyebrow">ACTIVE FILTER</p>
+        <h2 id="youtube-channels-heading">YouTube channels</h2>
+        <p>Removes videos from the public maintainer catalogue, plus any channels you add for yourself.</p>
+      </section>
+
+      <section class="rule-section" aria-labelledby="personal-designations-heading">
+        <h2 id="personal-designations-heading">Hide a channel for me</h2>
+        <p>Paste a YouTube Channel ID or a URL in the <code>/channel/UC...</code> format.</p>
+        <form id="designation-form" class="channel-form">
+          <label class="visually-hidden" for="designation-channel-id">YouTube Channel ID or URL</label>
+          <input id="designation-channel-id" name="channel" placeholder="UC..." required type="text" />
+          <button type="submit">Hide</button>
+        </form>
+        <ul id="designation-list" class="rule-list"></ul>
+      </section>
+
+      <section class="rule-section" aria-labelledby="personal-exemptions-heading">
+        <h2 id="personal-exemptions-heading">Always show a channel</h2>
+        <p>This restores a globally filtered channel only for your Chrome profile.</p>
+        <form id="exemption-form" class="channel-form">
+          <label class="visually-hidden" for="exemption-channel-id">YouTube Channel ID or URL</label>
+          <input id="exemption-channel-id" name="channel" placeholder="UC..." required type="text" />
+          <button type="submit">Show</button>
+        </form>
+        <ul id="exemption-list" class="rule-list"></ul>
+      </section>
+
+      <p id="saved-status" class="saved-status" aria-live="polite"></p>
+    </main>
+    <script type="module" src="./options.ts"></script>
+  </body>
+</html>
