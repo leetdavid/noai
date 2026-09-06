@@ -48,6 +48,10 @@ function getRateLimitExpiry(): Date {
 async function verifyTurnstile(token: string, ip: string): Promise<boolean> {
   try {
     const configuration = getConfiguration();
+    if (!configuration.TURNSTILE_SECRET_KEY) {
+      return false;
+    }
+
     const response = await fetch(
       "https://challenges.cloudflare.com/turnstile/v0/siteverify",
       {
@@ -69,6 +73,10 @@ async function verifyTurnstile(token: string, ip: string): Promise<boolean> {
 export const evidenceRoutes = new Hono();
 
 evidenceRoutes.post("/v1/evidence-submissions", async (context) => {
+  if (!getConfiguration().TURNSTILE_SECRET_KEY) {
+    return context.json({ error: "Evidence submissions are not enabled" }, 503);
+  }
+
   const parsedSubmission = evidenceSubmissionSchema.safeParse(
     await getJsonBody(context.req.raw),
   );

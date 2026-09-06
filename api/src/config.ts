@@ -8,7 +8,7 @@ const configurationSchema = z.object({
     .default("development"),
   PORT: z.coerce.number().int().positive().default(3000),
   PUBLIC_ORIGIN: z.string().url().default("https://noai.eslee.io"),
-  TURNSTILE_SECRET_KEY: z.string().min(1),
+  TURNSTILE_SECRET_KEY: z.string().min(1).optional(),
 });
 
 export type Configuration = z.infer<typeof configurationSchema>;

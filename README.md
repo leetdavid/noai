@@ -39,7 +39,7 @@ pnpm --filter @noai/api db:seed-maintainer
 }
 ```
 
-`POST /v1/evidence-submissions` accepts anonymous supporting evidence after Turnstile validation and a privacy-preserving daily rate limit. It never publishes a designation.
+`POST /v1/evidence-submissions` accepts anonymous supporting evidence after Turnstile validation and a privacy-preserving daily rate limit. It remains disabled until `TURNSTILE_SECRET_KEY` is configured and never publishes a designation.
 
 Maintainer routes use a GitHub OAuth access token and require the corresponding GitHub user ID to be active in the `maintainers` table:
 
