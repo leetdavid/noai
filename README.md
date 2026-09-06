@@ -49,4 +49,4 @@ Maintainer routes use a GitHub OAuth access token and require the corresponding 
 
 ## Railway
 
-`railway.toml` builds and starts the API from the repository root. Deploy the API and Railway Postgres as separate services, set the API environment variables, then point `api.noai.eslee.io` at the Railway API service through the `eslee-io` domain infrastructure. The planned public site remains `noai.eslee.io` and is intentionally not part of this repository yet.
+Deploy the API and Railway Postgres as separate services. Configure the API service to build with `pnpm install --frozen-lockfile && pnpm --filter @noai/api build`, migrate with `pnpm --filter @noai/api db:migrate`, and start with `pnpm --filter @noai/api start`. Point `api.noai.eslee.io` at the Railway API service through the `eslee-io` domain infrastructure. The planned public site remains `noai.eslee.io` and is intentionally not part of this repository yet.
