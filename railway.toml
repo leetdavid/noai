@@ -2,6 +2,7 @@
 buildCommand = "pnpm install --frozen-lockfile && pnpm --filter @noai/api build"
 
 [deploy]
+preDeployCommand = ["pnpm --filter @noai/api db:migrate"]
 startCommand = "pnpm --filter @noai/api start"
 healthcheckPath = "/health"
 healthcheckTimeout = 60
