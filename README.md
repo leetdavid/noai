@@ -7,6 +7,7 @@ NoAI filters AI slop without making browsing feel like moderation. The first fil
 - `src/` is the Manifest V3 Chrome extension.
 - `api/` is the Railway-ready Hono and PostgreSQL API.
 - `api/drizzle/` contains the PostgreSQL migration history.
+- `web/` is the public NoAI landing page and live catalogue status view.
 
 The extension downloads a compact, versioned Catalogue Snapshot at most once per hour. It receives only active YouTube Channel IDs; evidence, rationales, and Maintainer identities are not distributed to browsers.
 
@@ -49,4 +50,4 @@ Maintainer routes use a GitHub OAuth access token and require the corresponding 
 
 ## Railway
 
-Deploy the API and Railway Postgres as separate services. Configure the API service to build with `pnpm install --frozen-lockfile && pnpm --filter @noai/api build`, migrate with `pnpm --filter @noai/api db:migrate`, and start with `pnpm --filter @noai/api start`. Point `api.noai.eslee.io` at the Railway API service through the `eslee-io` domain infrastructure. The planned public site remains `noai.eslee.io` and is intentionally not part of this repository yet.
+Deploy the API, website, and Railway Postgres as separate services. Configure the API service to build with `pnpm install --frozen-lockfile && pnpm --filter @noai/api build`, migrate with `pnpm --filter @noai/api db:migrate`, and start with `pnpm --filter @noai/api start`. Configure the website service to build with `pnpm install --frozen-lockfile && pnpm --filter @noai/web build` and start with `pnpm --filter @noai/web start`. Point `api.noai.eslee.io` at the API service and `noai.eslee.io` at the website service through the `eslee-io` domain infrastructure.

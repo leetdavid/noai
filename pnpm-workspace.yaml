@@ -1,5 +1,6 @@
 packages:
   - api
+  - web
 
 allowBuilds:
   '@biomejs/biome': true

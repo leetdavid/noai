@@ -5,10 +5,11 @@
   "description": "A Chrome extension for blocking AI slop on the internet.",
   "type": "module",
   "scripts": {
-    "build": "pnpm build:extension && pnpm build:api",
+    "build": "pnpm build:extension && pnpm build:api && pnpm build:web",
     "build:api": "pnpm --filter @noai/api build",
     "build:extension": "tsc --noEmit && vite build",
-    "check": "biome check . && tsc --noEmit && pnpm --filter @noai/api typecheck",
+    "build:web": "pnpm --filter @noai/web build",
+    "check": "biome check . && tsc --noEmit && pnpm --filter @noai/api typecheck && pnpm --filter @noai/web typecheck",
     "check:fix": "biome check --write .",
     "dev": "vite build --watch",
     "test": "vitest run"
