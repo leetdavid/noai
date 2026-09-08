@@ -1,6 +1,8 @@
 import { useEffect, useEffectEvent, useState } from "react";
 
 const apiUrl = import.meta.env.VITE_API_URL ?? "https://api.noai.eslee.io";
+const channelIdPattern = /^UC[\w-]{22}$/;
+const videoIdPattern = /^[\w-]{11}$/;
 
 interface Designation {
   id: string;
@@ -53,6 +55,33 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 function isString(value: unknown): value is string {
   return typeof value === "string";
+}
+
+function isYouTubeVideoUrl(value: string): boolean {
+  try {
+    const url = new URL(value);
+    const host = url.hostname.toLowerCase();
+    if (host === "youtu.be") {
+      return videoIdPattern.test(url.pathname.slice(1));
+    }
+
+    if (
+      host !== "youtube.com" &&
+      host !== "www.youtube.com" &&
+      host !== "m.youtube.com"
+    ) {
+      return false;
+    }
+
+    if (url.pathname === "/watch") {
+      return videoIdPattern.test(url.searchParams.get("v") ?? "");
+    }
+
+    const shortMatch = url.pathname.match(/^\/shorts\/([\w-]{11})$/);
+    return shortMatch?.[1] ? videoIdPattern.test(shortMatch[1]) : false;
+  } catch {
+    return false;
+  }
 }
 
 function isDesignation(value: unknown): value is Designation {
@@ -187,6 +216,20 @@ function DesignationForm({
   ): Promise<void> {
     event.preventDefault();
     setMessage(null);
+    if (!channelIdPattern.test(value.channelId.trim())) {
+      setMessage(
+        "Enter the channel's immutable YouTube ID, beginning with UC.",
+      );
+      return;
+    }
+
+    if (!isYouTubeVideoUrl(value.videoUrl)) {
+      setMessage(
+        "Paste an individual YouTube video URL, not a channel profile URL.",
+      );
+      return;
+    }
+
     try {
       await onPublish(value);
       setValue({ channelId: "", rationale: "", videoUrl: "" });
@@ -220,6 +263,10 @@ function DesignationForm({
           required
           type="url"
         />
+        <small>
+          Use a watch, Shorts, or youtu.be video link. Channel profile URLs
+          cannot support a designation.
+        </small>
       </label>
       <label>
         <span>Maintainer rationale</span>

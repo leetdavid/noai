@@ -685,6 +685,13 @@ footer {
   text-transform: uppercase;
 }
 
+.maintain-form label > small {
+  color: #8e9989;
+  font-family: "Helvetica Neue", Arial, sans-serif;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
 .maintain-form input,
 .maintain-form textarea,
 .member-form input {
