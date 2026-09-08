@@ -36,11 +36,13 @@ export async function getGitHubUser(
 
 export async function getGitHubUserByLogin(
   login: string,
+  appToken: string,
 ): Promise<GitHubUser | null> {
   return parseGitHubUser(
     await fetch(`https://api.github.com/users/${encodeURIComponent(login)}`, {
       headers: {
         Accept: "application/vnd.github+json",
+        Authorization: `Bearer ${appToken}`,
         "User-Agent": "NoAI-Catalogue-API",
       },
     }),

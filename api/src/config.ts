@@ -3,9 +3,11 @@ import { z } from "zod";
 const configurationSchema = z.object({
   ABUSE_HASH_SECRET: z.string().min(1),
   DATABASE_URL: z.string().url(),
-  GITHUB_CLIENT_ID: z.string().min(1).optional(),
-  GITHUB_CLIENT_SECRET: z.string().min(1).optional(),
-  GITHUB_OAUTH_REDIRECT_URL: z
+  GITHUB_APP_CLIENT_ID: z.string().min(1).optional(),
+  GITHUB_APP_CLIENT_SECRET: z.string().min(1).optional(),
+  GITHUB_APP_ID: z.string().min(1).optional(),
+  GITHUB_APP_PRIVATE_KEY: z.string().min(1).optional(),
+  GITHUB_APP_REDIRECT_URL: z
     .string()
     .url()
     .default("https://api.noai.eslee.io/auth/github/callback"),

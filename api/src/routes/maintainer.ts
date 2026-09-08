@@ -12,6 +12,10 @@ import {
   evidenceSubmissions,
   maintainers,
 } from "../db/schema.js";
+import {
+  createGitHubAppToken,
+  getGitHubAppConfiguration,
+} from "../lib/github-app.js";
 import { getGitHubUserByLogin } from "../lib/github.js";
 import { getJsonBody } from "../lib/request.js";
 import { isYouTubeChannelId, isYouTubeVideoUrl } from "../lib/youtube.js";
@@ -160,7 +164,15 @@ maintainerRoutes.post("/v1/maintainer/members", async (context) => {
     return context.json({ error: "Invalid GitHub login" }, 400);
   }
 
-  const user = await getGitHubUserByLogin(input.data.githubLogin);
+  const appConfiguration = getGitHubAppConfiguration();
+  if (!appConfiguration) {
+    return context.json({ error: "GitHub App is not configured" }, 503);
+  }
+
+  const user = await getGitHubUserByLogin(
+    input.data.githubLogin,
+    createGitHubAppToken(appConfiguration),
+  );
   if (!user) {
     return context.json({ error: "GitHub user not found" }, 404);
   }

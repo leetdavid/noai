@@ -4,6 +4,7 @@ import { getCookie, setCookie } from "hono/cookie";
 import { z } from "zod";
 
 import { getConfiguration } from "./config.js";
+import { getGitHubAppConfiguration } from "./lib/github-app.js";
 import { getGitHubUser, getMaintainerByGitHubUserId } from "./lib/github.js";
 
 const sessionCookieName = "noai_session";
@@ -26,20 +27,17 @@ const stateSchema = z.object({
 type Session = z.infer<typeof sessionSchema>;
 
 function getOAuthConfiguration() {
-  const configuration = getConfiguration();
-  if (
-    !configuration.GITHUB_CLIENT_ID ||
-    !configuration.GITHUB_CLIENT_SECRET ||
-    !configuration.SESSION_SECRET
-  ) {
+  const app = getGitHubAppConfiguration();
+  const { SESSION_SECRET: sessionSecret } = getConfiguration();
+  if (!app || !sessionSecret) {
     return null;
   }
 
   return {
-    clientId: configuration.GITHUB_CLIENT_ID,
-    clientSecret: configuration.GITHUB_CLIENT_SECRET,
-    redirectUrl: configuration.GITHUB_OAUTH_REDIRECT_URL,
-    sessionSecret: configuration.SESSION_SECRET,
+    clientId: app.clientId,
+    clientSecret: app.clientSecret,
+    redirectUrl: app.redirectUrl,
+    sessionSecret,
   };
 }
 

@@ -42,7 +42,7 @@ pnpm --filter @noai/api db:seed-maintainer
 
 `POST /v1/evidence-submissions` accepts anonymous supporting evidence after Turnstile validation and a privacy-preserving daily rate limit. It remains disabled until `TURNSTILE_SECRET_KEY` is configured and never publishes a designation.
 
-Maintainer routes use a GitHub OAuth access token and require the corresponding GitHub user ID to be active in the `maintainers` table:
+Maintainer routes use GitHub App user authorization and require the corresponding GitHub user ID to be active in the `maintainers` table. Configure `GITHUB_APP_CLIENT_ID`, `GITHUB_APP_CLIENT_SECRET`, `GITHUB_APP_ID`, and `GITHUB_APP_PRIVATE_KEY` on the API service to enable `https://noai.eslee.io/maintain`:
 
 - `GET /v1/maintainer/evidence-submissions`
 - `POST /v1/maintainer/designations`
