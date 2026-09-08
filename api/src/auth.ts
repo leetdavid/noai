@@ -105,7 +105,9 @@ function createSession(githubUserId: string): Session {
 export function startGitHubLogin(context: Context): Response {
   const oauth = getOAuthConfiguration();
   if (!oauth) {
-    return context.json({ error: "Maintainer sign-in is not configured" }, 503);
+    return context.redirect(
+      `${getConfiguration().PUBLIC_ORIGIN}/maintain?auth=unavailable`,
+    );
   }
 
   const value = randomBytes(24).toString("base64url");
