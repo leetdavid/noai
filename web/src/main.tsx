@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 
 import { MaintainApp } from "./maintain";
+import { SubmitApp } from "./submit";
 import "./styles.css";
 
 interface CatalogueSnapshot {
@@ -270,5 +271,11 @@ if (!root) {
 }
 
 createRoot(root).render(
-  window.location.pathname === "/maintain" ? <MaintainApp /> : <App />,
+  window.location.pathname === "/maintain" ? (
+    <MaintainApp />
+  ) : window.location.pathname === "/submit" ? (
+    <SubmitApp />
+  ) : (
+    <App />
+  ),
 );
