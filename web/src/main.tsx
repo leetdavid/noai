@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 
+import { MaintainApp } from "./maintain";
 import "./styles.css";
 
 interface CatalogueSnapshot {
@@ -268,4 +269,6 @@ if (!root) {
   throw new Error("NoAI web root is missing");
 }
 
-createRoot(root).render(<App />);
+createRoot(root).render(
+  window.location.pathname === "/maintain" ? <MaintainApp /> : <App />,
+);

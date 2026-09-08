@@ -1,7 +1,8 @@
-import { and, eq, sql } from "drizzle-orm";
+import { and, desc, eq, sql } from "drizzle-orm";
 import { Hono } from "hono";
 import { z } from "zod";
 
+import { getCurrentMaintainer } from "../auth.js";
 import { db } from "../db/client.js";
 import {
   catalogueState,
@@ -9,8 +10,9 @@ import {
   channels,
   designationEvents,
   evidenceSubmissions,
+  maintainers,
 } from "../db/schema.js";
-import { getMaintainer } from "../lib/github.js";
+import { getGitHubUserByLogin } from "../lib/github.js";
 import { getJsonBody } from "../lib/request.js";
 import { isYouTubeChannelId, isYouTubeVideoUrl } from "../lib/youtube.js";
 
@@ -25,43 +27,193 @@ const designationSchema = z.object({
     .refine(isYouTubeVideoUrl, "Invalid YouTube video URL"),
 });
 
+const memberSchema = z.object({
+  githubLogin: z.string().trim().min(1).max(255),
+});
+
 const removalSchema = z.object({
   reason: z.string().trim().min(1).max(2_000),
 });
 
-function getAccessToken(header: string | undefined): string | null {
-  if (!header?.startsWith("Bearer ")) {
-    return null;
-  }
+const reviewSchema = z.object({
+  status: z.enum(["reviewed", "dismissed"]),
+});
 
-  return header.slice("Bearer ".length).trim() || null;
+async function requireMaintainer(
+  context: Parameters<typeof getCurrentMaintainer>[0],
+) {
+  return getCurrentMaintainer(context);
 }
 
-async function requireMaintainer(authorization: string | undefined) {
-  const accessToken = getAccessToken(authorization);
-  return accessToken ? getMaintainer(accessToken) : null;
+function unauthorised(context: Parameters<typeof getCurrentMaintainer>[0]) {
+  return context.json({ error: "Maintainer authorization required" }, 401);
 }
 
 export const maintainerRoutes = new Hono();
 
-maintainerRoutes.get("/v1/maintainer/evidence-submissions", async (context) => {
-  const maintainer = await requireMaintainer(
-    context.req.header("authorization"),
+maintainerRoutes.get("/v1/maintainer/session", async (context) => {
+  const maintainer = await getCurrentMaintainer(context);
+  return context.json(
+    maintainer
+      ? {
+          authenticated: true,
+          maintainer: {
+            githubLogin: maintainer.githubLogin,
+            githubUserId: maintainer.githubUserId,
+          },
+        }
+      : { authenticated: false },
   );
-  if (!maintainer) {
-    return context.json({ error: "Maintainer authorization required" }, 401);
-  }
-
-  const submissions = await db.select().from(evidenceSubmissions);
-  return context.json({ submissions });
 });
 
-maintainerRoutes.post("/v1/maintainer/designations", async (context) => {
-  const maintainer = await requireMaintainer(
-    context.req.header("authorization"),
-  );
+maintainerRoutes.get("/v1/maintainer/dashboard", async (context) => {
+  const maintainer = await requireMaintainer(context);
   if (!maintainer) {
-    return context.json({ error: "Maintainer authorization required" }, 401);
+    return unauthorised(context);
+  }
+
+  const [designations, submissions, members] = await Promise.all([
+    db
+      .select({
+        id: channelDesignations.id,
+        rationale: channelDesignations.rationale,
+        representativeVideoUrl: channelDesignations.representativeVideoUrl,
+        status: channelDesignations.status,
+        updatedAt: channelDesignations.updatedAt,
+        youtubeChannelId: channels.youtubeChannelId,
+      })
+      .from(channelDesignations)
+      .innerJoin(channels, eq(channelDesignations.channelId, channels.id))
+      .orderBy(desc(channelDesignations.updatedAt)),
+    db
+      .select({
+        createdAt: evidenceSubmissions.createdAt,
+        id: evidenceSubmissions.id,
+        rationale: evidenceSubmissions.rationale,
+        representativeVideoUrl: evidenceSubmissions.representativeVideoUrl,
+        reviewedAt: evidenceSubmissions.reviewedAt,
+        status: evidenceSubmissions.status,
+        youtubeChannelId: evidenceSubmissions.youtubeChannelId,
+      })
+      .from(evidenceSubmissions)
+      .orderBy(desc(evidenceSubmissions.createdAt)),
+    db
+      .select({
+        active: maintainers.active,
+        githubLogin: maintainers.githubLogin,
+        githubUserId: maintainers.githubUserId,
+        id: maintainers.id,
+      })
+      .from(maintainers)
+      .orderBy(maintainers.githubLogin),
+  ]);
+
+  return context.json({
+    designations,
+    maintainer: {
+      githubLogin: maintainer.githubLogin,
+      githubUserId: maintainer.githubUserId,
+    },
+    members,
+    submissions,
+  });
+});
+
+maintainerRoutes.post(
+  "/v1/maintainer/evidence-submissions/:id/review",
+  async (context) => {
+    const maintainer = await requireMaintainer(context);
+    if (!maintainer) {
+      return unauthorised(context);
+    }
+
+    const input = reviewSchema.safeParse(await getJsonBody(context.req.raw));
+    if (!input.success) {
+      return context.json({ error: "Invalid evidence review" }, 400);
+    }
+
+    const [submission] = await db
+      .update(evidenceSubmissions)
+      .set({
+        reviewedAt: new Date(),
+        reviewedByMaintainerId: maintainer.id,
+        status: input.data.status,
+      })
+      .where(eq(evidenceSubmissions.id, context.req.param("id")))
+      .returning();
+    if (!submission) {
+      return context.json({ error: "Evidence submission not found" }, 404);
+    }
+
+    return context.json({ submission });
+  },
+);
+
+maintainerRoutes.post("/v1/maintainer/members", async (context) => {
+  const maintainer = await requireMaintainer(context);
+  if (!maintainer) {
+    return unauthorised(context);
+  }
+
+  const input = memberSchema.safeParse(await getJsonBody(context.req.raw));
+  if (!input.success) {
+    return context.json({ error: "Invalid GitHub login" }, 400);
+  }
+
+  const user = await getGitHubUserByLogin(input.data.githubLogin);
+  if (!user) {
+    return context.json({ error: "GitHub user not found" }, 404);
+  }
+
+  const [member] = await db
+    .insert(maintainers)
+    .values({ githubLogin: user.login, githubUserId: String(user.id) })
+    .onConflictDoUpdate({
+      set: {
+        active: true,
+        githubLogin: user.login,
+        updatedAt: new Date(),
+      },
+      target: maintainers.githubUserId,
+    })
+    .returning();
+
+  return context.json({ member }, 201);
+});
+
+maintainerRoutes.post(
+  "/v1/maintainer/members/:githubUserId/deactivate",
+  async (context) => {
+    const maintainer = await requireMaintainer(context);
+    if (!maintainer) {
+      return unauthorised(context);
+    }
+
+    const githubUserId = context.req.param("githubUserId");
+    if (githubUserId === maintainer.githubUserId) {
+      return context.json(
+        { error: "You cannot remove your own maintainer access" },
+        400,
+      );
+    }
+
+    const [member] = await db
+      .update(maintainers)
+      .set({ active: false, updatedAt: new Date() })
+      .where(eq(maintainers.githubUserId, githubUserId))
+      .returning();
+    if (!member) {
+      return context.json({ error: "Maintainer not found" }, 404);
+    }
+
+    return context.json({ member });
+  },
+);
+
+maintainerRoutes.post("/v1/maintainer/designations", async (context) => {
+  const maintainer = await requireMaintainer(context);
+  if (!maintainer) {
+    return unauthorised(context);
   }
 
   const input = designationSchema.safeParse(await getJsonBody(context.req.raw));
@@ -151,11 +303,9 @@ maintainerRoutes.post("/v1/maintainer/designations", async (context) => {
 maintainerRoutes.post(
   "/v1/maintainer/designations/:channelId/remove",
   async (context) => {
-    const maintainer = await requireMaintainer(
-      context.req.header("authorization"),
-    );
+    const maintainer = await requireMaintainer(context);
     if (!maintainer) {
-      return context.json({ error: "Maintainer authorization required" }, 401);
+      return unauthorised(context);
     }
 
     const channelId = context.req.param("channelId");

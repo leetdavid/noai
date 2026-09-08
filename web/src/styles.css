@@ -544,3 +544,363 @@ footer {
     padding: 22px 24px;
   }
 }
+
+.maintain-shell {
+  min-height: 100dvh;
+  background: #171b17;
+  color: #f2f3eb;
+}
+
+.maintain-header {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  min-height: 68px;
+  padding: 0 5vw;
+  border-bottom: 1px solid #3b4239;
+  color: #aeb5a8;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+}
+
+.maintain-header > p {
+  margin: 0;
+}
+
+.maintain-header > div {
+  display: flex;
+  justify-content: flex-end;
+  gap: 18px;
+  align-items: center;
+}
+
+.maintain-mark {
+  color: #c9db43;
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: -0.11em;
+  text-decoration: none;
+}
+
+.text-button {
+  cursor: pointer;
+  border: 0;
+  background: transparent;
+  color: #c9db43;
+  font: inherit;
+}
+
+.maintain-hero,
+.maintain-grid,
+.maintain-alert {
+  max-width: 1240px;
+  margin-right: auto;
+  margin-left: auto;
+}
+
+.maintain-hero {
+  padding: 92px 5vw 66px;
+}
+
+.maintain-hero h1,
+.sign-in-panel h1 {
+  max-width: 780px;
+  margin-bottom: 22px;
+  font-size: clamp(48px, 7vw, 90px);
+  line-height: 0.88;
+}
+
+.maintain-hero > p:last-child,
+.sign-in-panel > p {
+  max-width: 620px;
+  margin-bottom: 0;
+  color: #afb7aa;
+  font-family: "Helvetica Neue", Arial, sans-serif;
+  font-size: 17px;
+  line-height: 1.55;
+}
+
+.maintain-alert {
+  margin-bottom: 28px;
+  padding: 13px 5vw;
+  border-left: 3px solid #e9c061;
+  background: #28271c;
+  color: #efe4bb;
+  font-size: 14px;
+}
+
+.maintain-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.9fr);
+  gap: 0 72px;
+  padding: 0 5vw 112px;
+}
+
+.maintain-section {
+  padding: 38px 0 46px;
+  border-top: 1px solid #3b4239;
+}
+
+.publish-section,
+.queue-section {
+  border-top-color: #c9db43;
+}
+
+.designation-section,
+.members-section {
+  grid-column: 1 / -1;
+}
+
+.section-title {
+  margin-bottom: 26px;
+}
+
+.section-title .eyebrow {
+  margin-bottom: 9px;
+}
+
+.section-title h2 {
+  font-size: clamp(26px, 3vw, 42px);
+}
+
+.maintain-form,
+.member-form {
+  display: grid;
+  gap: 18px;
+}
+
+.maintain-form label,
+.member-form label {
+  display: grid;
+  gap: 7px;
+}
+
+.maintain-form label > span,
+.member-form label > span {
+  color: #b5beb0;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.maintain-form input,
+.maintain-form textarea,
+.member-form input {
+  width: 100%;
+  border: 1px solid #536051;
+  border-radius: 0;
+  background: #202520;
+  color: #f2f3eb;
+  font: inherit;
+  padding: 12px 13px;
+}
+
+.maintain-form textarea {
+  resize: vertical;
+}
+
+.maintain-form input:focus,
+.maintain-form textarea:focus,
+.member-form input:focus {
+  outline: 1px solid #c9db43;
+  outline-offset: 2px;
+}
+
+.maintain-form button,
+.member-form button,
+.review-actions button,
+.designation-list button,
+.member-list button {
+  width: fit-content;
+  cursor: pointer;
+  border: 1px solid #c9db43;
+  border-radius: 0;
+  background: #c9db43;
+  color: #171b17;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  padding: 11px 14px;
+}
+
+.maintain-form button:disabled,
+.member-list button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.form-message {
+  margin: 0;
+  color: #c9db43;
+  font-size: 13px;
+}
+
+.is-error {
+  color: #f2a59d;
+}
+
+.review-list,
+.designation-list,
+.member-list {
+  border-top: 1px solid #3b4239;
+}
+
+.review-item,
+.designation-list article,
+.member-list > div {
+  padding: 18px 0;
+  border-bottom: 1px solid #3b4239;
+}
+
+.review-item > a,
+.designation-list a {
+  color: #dce5d1;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 12px;
+}
+
+.review-item > p,
+.designation-list p {
+  margin: 10px 0;
+  color: #c7cec1;
+  font-family: "Helvetica Neue", Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.video-link {
+  color: #c9db43;
+  font-size: 13px;
+}
+
+.review-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+  margin-top: 18px;
+}
+
+.review-actions button:last-child,
+.designation-list button,
+.member-list button {
+  border-color: #657062;
+  background: transparent;
+  color: #c4cbc0;
+}
+
+.designation-list article > div,
+.member-list > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.designation-list article > div span,
+.member-list > div > span:last-child {
+  color: #98a193;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 10px;
+}
+
+.member-form {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  margin-bottom: 30px;
+}
+
+.empty-copy {
+  margin: 0;
+  padding: 20px 0;
+  color: #9da796;
+  font-family: "Helvetica Neue", Arial, sans-serif;
+  font-size: 14px;
+}
+
+.sign-in-shell {
+  display: grid;
+  grid-template-columns: minmax(120px, 0.45fr) minmax(0, 1fr);
+  gap: 10vw;
+  align-items: start;
+  padding: 48px 8vw;
+}
+
+.sign-in-panel {
+  max-width: 660px;
+  padding-top: 14vh;
+}
+
+.sign-in-panel .button {
+  margin-top: 34px;
+}
+
+.back-link {
+  display: block;
+  width: fit-content;
+  margin-top: 20px;
+  color: #c9db43;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 12px;
+}
+
+.loading-shell {
+  display: grid;
+  place-items: center;
+  padding: 48px;
+  color: #c9db43;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 13px;
+}
+
+@media (max-width: 820px) {
+  .maintain-header {
+    grid-template-columns: 1fr auto;
+    padding: 0 24px;
+  }
+
+  .maintain-header > p {
+    display: none;
+  }
+
+  .maintain-hero {
+    padding: 68px 24px 48px;
+  }
+
+  .maintain-grid {
+    grid-template-columns: 1fr;
+    padding: 0 24px 80px;
+  }
+
+  .designation-section,
+  .members-section {
+    grid-column: auto;
+  }
+
+  .sign-in-shell {
+    display: block;
+    padding: 28px 24px;
+  }
+
+  .sign-in-panel {
+    padding-top: 18vh;
+  }
+}
+
+@media (max-width: 520px) {
+  .member-form {
+    grid-template-columns: 1fr;
+  }
+
+  .maintain-hero h1,
+  .sign-in-panel h1 {
+    font-size: 50px;
+  }
+
+  .designation-list article > div,
+  .member-list > div {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

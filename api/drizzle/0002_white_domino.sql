@@ -1,0 +1,3 @@
+ALTER TABLE "evidence_submissions" ADD COLUMN "reviewed_at" timestamp with time zone;--> statement-breakpoint
+ALTER TABLE "evidence_submissions" ADD COLUMN "reviewed_by_maintainer_id" uuid;--> statement-breakpoint
+ALTER TABLE "evidence_submissions" ADD CONSTRAINT "evidence_submissions_reviewed_by_maintainer_id_maintainers_id_fk" FOREIGN KEY ("reviewed_by_maintainer_id") REFERENCES "public"."maintainers"("id") ON DELETE no action ON UPDATE no action;

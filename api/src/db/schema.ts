@@ -103,6 +103,10 @@ export const evidenceSubmissions = pgTable("evidence_submissions", {
   representativeVideoUrl: text("representative_video_url").notNull(),
   rateLimitKey: varchar("rate_limit_key", { length: 64 }).notNull(),
   status: evidenceSubmissionStatus("status").default("pending").notNull(),
+  reviewedAt: timestamp("reviewed_at", { withTimezone: true }),
+  reviewedByMaintainerId: uuid("reviewed_by_maintainer_id").references(
+    () => maintainers.id,
+  ),
   createdAt: timestamp("created_at", { withTimezone: true })
     .defaultNow()
     .notNull(),
