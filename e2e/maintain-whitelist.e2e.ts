@@ -79,6 +79,12 @@ test.describe("maintainer whitelist workflow", () => {
 
     await page.goto("/maintain");
     await expect(
+      page.getByRole("heading", { name: "Needs your review" }),
+    ).toBeVisible();
+    await expect(page.locator("#review-queue .workflow-badge")).toHaveText(
+      "1 pending",
+    );
+    await expect(
       page.getByRole("heading", { name: "Trusted whitelist" }),
     ).toBeVisible();
     await expect(

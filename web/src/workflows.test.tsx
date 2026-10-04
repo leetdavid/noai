@@ -291,6 +291,39 @@ describe("maintainer workflows", () => {
     ]);
   });
 
+  it("summarizes everything needing review across both queues", async () => {
+    await render(<MaintainApp />);
+    const summary = container.querySelector("#review-queue");
+    expect(summary?.querySelector("h2")?.textContent).toBe("Needs your review");
+    expect(summary?.querySelector(".workflow-badge")?.textContent).toBe(
+      "1 pending",
+    );
+    expect(summary?.textContent).toContain("1 blacklist evidence submission");
+    expect(summary?.textContent).toContain("no whitelist requests");
+    expect(
+      summary?.querySelector('a[href="#evidence"]')?.textContent,
+    ).toContain("Review evidence (1)");
+    expect(summary?.querySelector('a[href="#whitelist-requests"]')).toBeNull();
+  });
+
+  it("shows an honest all-caught-up state when both queues are empty", async () => {
+    fetchMock.mockImplementation(async (input) => {
+      const path = new URL(String(input)).pathname;
+      if (path.endsWith("/session"))
+        return Response.json({ authenticated: true });
+      if (path.endsWith("/dashboard"))
+        return Response.json({ ...dashboard, submissions: [] });
+      return Response.json({ status: "received" });
+    });
+    await render(<MaintainApp />);
+    const summary = container.querySelector("#review-queue");
+    expect(summary?.querySelector(".workflow-badge")?.textContent).toBe(
+      "0 pending",
+    );
+    expect(summary?.textContent).toContain("all caught up");
+    expect(summary?.querySelector("a")).toBeNull();
+  });
+
   it("adds and deactivates maintainers without offering self-deactivation", async () => {
     await render(<MaintainApp />);
     expect(

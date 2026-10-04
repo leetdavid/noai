@@ -1503,6 +1503,90 @@ function Members({
   );
 }
 
+function countPending(submissions: EvidenceSubmission[] | undefined): number {
+  return (submissions ?? []).filter(
+    (submission) => submission.status === "pending",
+  ).length;
+}
+
+function pluralize(count: number, singular: string): string {
+  return count === 1 ? singular : `${singular}s`;
+}
+
+function queueSummaryText(evidence: number, whitelist: number): string {
+  const evidenceText =
+    evidence > 0
+      ? `${evidence} blacklist evidence ${pluralize(evidence, "submission")}`
+      : "No blacklist evidence";
+  const whitelistText =
+    whitelist > 0
+      ? `${whitelist} whitelist ${pluralize(whitelist, "request")}`
+      : "no whitelist requests";
+  return `${evidenceText} · ${whitelistText} waiting for a decision.`;
+}
+
+function QueueLinks({
+  evidence,
+  whitelist,
+}: { evidence: number; whitelist: number }) {
+  return (
+    <div className="workflow-actions">
+      {evidence > 0 ? (
+        <a className="workflow-button is-secondary" href="#evidence">
+          Review evidence ({evidence})
+        </a>
+      ) : null}
+      {whitelist > 0 ? (
+        <a className="workflow-button is-secondary" href="#whitelist-requests">
+          Review whitelist requests ({whitelist})
+        </a>
+      ) : null}
+    </div>
+  );
+}
+
+function ReviewQueueSummary({ dashboard }: { dashboard: Dashboard }) {
+  const pendingEvidence = countPending(dashboard.submissions);
+  const pendingWhitelist = countPending(dashboard.trustSubmissions);
+  const total = pendingEvidence + pendingWhitelist;
+
+  if (total === 0) {
+    return (
+      <section
+        className="workflow-panel"
+        id="review-queue"
+        aria-labelledby="review-queue-title"
+      >
+        <div className="workflow-section-heading">
+          <h2 id="review-queue-title">Needs your review</h2>
+          <span className="workflow-badge">0 pending</span>
+        </div>
+        <p className="workflow-muted">
+          You&apos;re all caught up. New blacklist evidence and whitelist
+          requests will appear here.
+        </p>
+      </section>
+    );
+  }
+
+  return (
+    <section
+      className="workflow-panel"
+      id="review-queue"
+      aria-labelledby="review-queue-title"
+    >
+      <div className="workflow-section-heading">
+        <h2 id="review-queue-title">Needs your review</h2>
+        <span className="workflow-badge">{total} pending</span>
+      </div>
+      <p className="workflow-muted">
+        {queueSummaryText(pendingEvidence, pendingWhitelist)}
+      </p>
+      <QueueLinks evidence={pendingEvidence} whitelist={pendingWhitelist} />
+    </section>
+  );
+}
+
 function MaintainerDashboard({
   dashboard,
   refresh,
@@ -1594,6 +1678,7 @@ function MaintainerDashboard({
       </div>
       <Feedback notice={notice} />
       <nav className="workflow-section-nav" aria-label="Maintainer sections">
+        <a href="#review-queue">Needs review</a>
         <a href="#draft">Write a designation</a>
         <a href="#evidence">Review evidence</a>
         <a href="#designations">Designations</a>
@@ -1603,6 +1688,7 @@ function MaintainerDashboard({
         <a href="#maintainers">Maintainer access</a>
       </nav>
       <div className="workflow-dashboard-grid">
+        <ReviewQueueSummary dashboard={dashboard} />
         <section
           className="workflow-panel workflow-draft"
           id="draft"
