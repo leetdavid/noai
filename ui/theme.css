@@ -1,0 +1,139 @@
+@font-face {
+  font-family: "DM Sans";
+  font-style: normal;
+  font-weight: 100 1000;
+  font-display: swap;
+  src: url("@fontsource-variable/dm-sans/files/dm-sans-latin-wght-normal.woff2")
+    format("woff2");
+}
+
+@font-face {
+  font-family: "Lora";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url("@fontsource-variable/lora/files/lora-latin-wght-normal.woff2")
+    format("woff2");
+}
+
+:root {
+  color-scheme: light;
+  --paper: #f7f5ef;
+  --surface: #fffefb;
+  --ink: #26352b;
+  --muted: #5f695f;
+  --green: #315a46;
+  --green-hover: #244635;
+  --sage: #e5ecdf;
+  --sage-deep: #c4d3bb;
+  --peach: #edc7b1;
+  --line: #d9ddd2;
+  --error: #9b3d32;
+  --error-bg: #fbebe6;
+  --sans: "DM Sans", system-ui, sans-serif;
+  --serif: "Lora", Georgia, serif;
+  color: var(--ink);
+  background: var(--paper);
+  font-family: var(--sans);
+  font-synthesis: none;
+  line-height: 1.5;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+a {
+  color: var(--green);
+  text-underline-offset: 4px;
+}
+
+button,
+a,
+input,
+textarea,
+select,
+summary {
+  -webkit-tap-highlight-color: transparent;
+}
+
+:focus-visible {
+  outline: 3px solid var(--green);
+  outline-offset: 4px;
+}
+
+::selection {
+  color: var(--ink);
+  background: var(--peach);
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--ink);
+  font: 750 24px / 1 var(--sans);
+  letter-spacing: -1px;
+  text-decoration: none;
+}
+
+.brand-mark {
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 34px;
+  height: 34px;
+  border-radius: 11px 11px 11px 3px;
+  background: var(--green);
+  color: var(--surface);
+  font: 700 22px / 1 var(--serif);
+  letter-spacing: -2px;
+  padding-right: 2px;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.skip-link {
+  position: absolute;
+  top: 12px;
+  left: 16px;
+  z-index: 5;
+  padding: 12px 18px;
+  border-radius: 8px;
+  color: var(--surface);
+  background: var(--green);
+  transform: translateY(-180%);
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}

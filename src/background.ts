@@ -1,9 +1,14 @@
+import { recordBlockedChannel } from "./shared/blocked-channels";
 import {
   type CatalogueSnapshot,
   EMPTY_CATALOGUE_SNAPSHOT,
   parseCatalogueSnapshot,
 } from "./shared/catalogue";
-import { CATALOGUE_RESPONSE_KIND, isCatalogueRequest } from "./shared/messages";
+import {
+  CATALOGUE_RESPONSE_KIND,
+  isBlockedChannelMessage,
+  isCatalogueRequest,
+} from "./shared/messages";
 
 const catalogueUrl = "https://api.noai.eslee.io/v1/catalogue";
 const cacheKey = "catalogue-cache";
@@ -83,6 +88,11 @@ async function getCatalogue(): Promise<CatalogueSnapshot> {
 }
 
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
+  if (isBlockedChannelMessage(message)) {
+    void recordBlockedChannel(message);
+    return;
+  }
+
   if (!isCatalogueRequest(message)) {
     return;
   }

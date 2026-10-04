@@ -112,6 +112,60 @@ export const evidenceSubmissions = pgTable("evidence_submissions", {
     .notNull(),
 });
 
+export const trustSubmissions = pgTable("trust_submissions", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  youtubeChannelId: varchar("youtube_channel_id", { length: 24 }).notNull(),
+  rationale: text("rationale").notNull(),
+  representativeVideoUrl: text("representative_video_url").notNull(),
+  rateLimitKey: varchar("rate_limit_key", { length: 64 }).notNull(),
+  status: evidenceSubmissionStatus("status").default("pending").notNull(),
+  reviewedAt: timestamp("reviewed_at", { withTimezone: true }),
+  reviewedByMaintainerId: uuid("reviewed_by_maintainer_id").references(
+    () => maintainers.id,
+  ),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+});
+
+export const trustedDesignations = pgTable("trusted_designations", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  channelId: uuid("channel_id")
+    .notNull()
+    .unique()
+    .references(() => channels.id),
+  status: designationStatus("status").default("active").notNull(),
+  rationale: text("rationale").notNull(),
+  representativeVideoUrl: text("representative_video_url").notNull(),
+  createdByMaintainerId: uuid("created_by_maintainer_id")
+    .notNull()
+    .references(() => maintainers.id),
+  updatedByMaintainerId: uuid("updated_by_maintainer_id")
+    .notNull()
+    .references(() => maintainers.id),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+});
+
+export const trustDesignationEvents = pgTable("trust_designation_events", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  designationId: uuid("designation_id")
+    .notNull()
+    .references(() => trustedDesignations.id),
+  maintainerId: uuid("maintainer_id")
+    .notNull()
+    .references(() => maintainers.id),
+  kind: designationEventKind("kind").notNull(),
+  snapshot: jsonb("snapshot").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+});
+
 export const submissionRateLimits = pgTable("submission_rate_limits", {
   rateLimitKey: varchar("rate_limit_key", { length: 64 }).primaryKey(),
   count: integer("count").default(0).notNull(),

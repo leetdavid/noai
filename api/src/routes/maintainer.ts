@@ -11,6 +11,9 @@ import {
   designationEvents,
   evidenceSubmissions,
   maintainers,
+  trustDesignationEvents,
+  trustSubmissions,
+  trustedDesignations,
 } from "../db/schema.js";
 import {
   createGitHubAppToken,
@@ -76,41 +79,66 @@ maintainerRoutes.get("/v1/maintainer/dashboard", async (context) => {
     return unauthorised(context);
   }
 
-  const [designations, submissions, members] = await Promise.all([
-    db
-      .select({
-        id: channelDesignations.id,
-        rationale: channelDesignations.rationale,
-        representativeVideoUrl: channelDesignations.representativeVideoUrl,
-        status: channelDesignations.status,
-        updatedAt: channelDesignations.updatedAt,
-        youtubeChannelId: channels.youtubeChannelId,
-      })
-      .from(channelDesignations)
-      .innerJoin(channels, eq(channelDesignations.channelId, channels.id))
-      .orderBy(desc(channelDesignations.updatedAt)),
-    db
-      .select({
-        createdAt: evidenceSubmissions.createdAt,
-        id: evidenceSubmissions.id,
-        rationale: evidenceSubmissions.rationale,
-        representativeVideoUrl: evidenceSubmissions.representativeVideoUrl,
-        reviewedAt: evidenceSubmissions.reviewedAt,
-        status: evidenceSubmissions.status,
-        youtubeChannelId: evidenceSubmissions.youtubeChannelId,
-      })
-      .from(evidenceSubmissions)
-      .orderBy(desc(evidenceSubmissions.createdAt)),
-    db
-      .select({
-        active: maintainers.active,
-        githubLogin: maintainers.githubLogin,
-        githubUserId: maintainers.githubUserId,
-        id: maintainers.id,
-      })
-      .from(maintainers)
-      .orderBy(maintainers.githubLogin),
-  ]);
+  const [designations, submissions, trusted, trustQueue, members] =
+    await Promise.all([
+      db
+        .select({
+          id: channelDesignations.id,
+          rationale: channelDesignations.rationale,
+          representativeVideoUrl: channelDesignations.representativeVideoUrl,
+          status: channelDesignations.status,
+          updatedAt: channelDesignations.updatedAt,
+          youtubeChannelId: channels.youtubeChannelId,
+        })
+        .from(channelDesignations)
+        .innerJoin(channels, eq(channelDesignations.channelId, channels.id))
+        .orderBy(desc(channelDesignations.updatedAt)),
+      db
+        .select({
+          createdAt: evidenceSubmissions.createdAt,
+          id: evidenceSubmissions.id,
+          rationale: evidenceSubmissions.rationale,
+          representativeVideoUrl: evidenceSubmissions.representativeVideoUrl,
+          reviewedAt: evidenceSubmissions.reviewedAt,
+          status: evidenceSubmissions.status,
+          youtubeChannelId: evidenceSubmissions.youtubeChannelId,
+        })
+        .from(evidenceSubmissions)
+        .orderBy(desc(evidenceSubmissions.createdAt)),
+      db
+        .select({
+          id: trustedDesignations.id,
+          rationale: trustedDesignations.rationale,
+          representativeVideoUrl: trustedDesignations.representativeVideoUrl,
+          status: trustedDesignations.status,
+          updatedAt: trustedDesignations.updatedAt,
+          youtubeChannelId: channels.youtubeChannelId,
+        })
+        .from(trustedDesignations)
+        .innerJoin(channels, eq(trustedDesignations.channelId, channels.id))
+        .orderBy(desc(trustedDesignations.updatedAt)),
+      db
+        .select({
+          createdAt: trustSubmissions.createdAt,
+          id: trustSubmissions.id,
+          rationale: trustSubmissions.rationale,
+          representativeVideoUrl: trustSubmissions.representativeVideoUrl,
+          reviewedAt: trustSubmissions.reviewedAt,
+          status: trustSubmissions.status,
+          youtubeChannelId: trustSubmissions.youtubeChannelId,
+        })
+        .from(trustSubmissions)
+        .orderBy(desc(trustSubmissions.createdAt)),
+      db
+        .select({
+          active: maintainers.active,
+          githubLogin: maintainers.githubLogin,
+          githubUserId: maintainers.githubUserId,
+          id: maintainers.id,
+        })
+        .from(maintainers)
+        .orderBy(maintainers.githubLogin),
+    ]);
 
   return context.json({
     designations,
@@ -120,6 +148,8 @@ maintainerRoutes.get("/v1/maintainer/dashboard", async (context) => {
     },
     members,
     submissions,
+    trustSubmissions: trustQueue,
+    trustedDesignations: trusted,
   });
 });
 
@@ -376,6 +406,207 @@ maintainerRoutes.post(
 
     if (!removed) {
       return context.json({ error: "Active designation not found" }, 404);
+    }
+
+    return context.json({ status: "removed" });
+  },
+);
+
+async function bumpCatalogueVersion(
+  // biome-ignore lint/suspicious/noExplicitAny: drizzle transaction type varies
+  transaction: any,
+  now: Date,
+): Promise<void> {
+  await transaction
+    .insert(catalogueState)
+    .values({ id: 1, version: 1 })
+    .onConflictDoUpdate({
+      set: {
+        updatedAt: now,
+        version: sql`${catalogueState.version} + 1`,
+      },
+      target: catalogueState.id,
+    });
+}
+
+maintainerRoutes.post(
+  "/v1/maintainer/trust-submissions/:id/review",
+  async (context) => {
+    const maintainer = await requireMaintainer(context);
+    if (!maintainer) {
+      return unauthorised(context);
+    }
+
+    const input = reviewSchema.safeParse(await getJsonBody(context.req.raw));
+    if (!input.success) {
+      return context.json({ error: "Invalid whitelist review" }, 400);
+    }
+
+    const [submission] = await db
+      .update(trustSubmissions)
+      .set({
+        reviewedAt: new Date(),
+        reviewedByMaintainerId: maintainer.id,
+        status: input.data.status,
+      })
+      .where(eq(trustSubmissions.id, context.req.param("id")))
+      .returning();
+    if (!submission) {
+      return context.json({ error: "Whitelist submission not found" }, 404);
+    }
+
+    return context.json({ submission });
+  },
+);
+
+maintainerRoutes.post(
+  "/v1/maintainer/trusted-designations",
+  async (context) => {
+    const maintainer = await requireMaintainer(context);
+    if (!maintainer) {
+      return unauthorised(context);
+    }
+
+    const input = designationSchema.safeParse(
+      await getJsonBody(context.req.raw),
+    );
+    if (!input.success) {
+      return context.json(
+        { error: "Invalid trusted channel designation" },
+        400,
+      );
+    }
+
+    const publication = await db.transaction(async (transaction) => {
+      const [insertedChannel] = await transaction
+        .insert(channels)
+        .values({ youtubeChannelId: input.data.channelId })
+        .onConflictDoNothing()
+        .returning();
+      const channel =
+        insertedChannel ??
+        (
+          await transaction
+            .select()
+            .from(channels)
+            .where(eq(channels.youtubeChannelId, input.data.channelId))
+            .limit(1)
+        )[0];
+      if (!channel) {
+        throw new Error("Unable to create channel");
+      }
+
+      const [existingDesignation] = await transaction
+        .select()
+        .from(trustedDesignations)
+        .where(eq(trustedDesignations.channelId, channel.id))
+        .limit(1);
+      const now = new Date();
+      const [designation] = await transaction
+        .insert(trustedDesignations)
+        .values({
+          channelId: channel.id,
+          createdByMaintainerId: maintainer.id,
+          rationale: input.data.rationale,
+          representativeVideoUrl: input.data.videoUrl,
+          updatedByMaintainerId: maintainer.id,
+        })
+        .onConflictDoUpdate({
+          set: {
+            rationale: input.data.rationale,
+            representativeVideoUrl: input.data.videoUrl,
+            status: "active",
+            updatedAt: now,
+            updatedByMaintainerId: maintainer.id,
+          },
+          target: trustedDesignations.channelId,
+        })
+        .returning();
+      if (!designation) {
+        throw new Error("Unable to publish trusted designation");
+      }
+
+      await transaction.insert(trustDesignationEvents).values({
+        designationId: designation.id,
+        kind:
+          existingDesignation?.status === "active" ? "revised" : "published",
+        maintainerId: maintainer.id,
+        snapshot: input.data,
+      });
+      await bumpCatalogueVersion(transaction, now);
+
+      return {
+        designation,
+        wasActive: existingDesignation?.status === "active",
+      };
+    });
+
+    if (publication.wasActive) {
+      return context.json(publication.designation, 200);
+    }
+
+    return context.json(publication.designation, 201);
+  },
+);
+
+maintainerRoutes.post(
+  "/v1/maintainer/trusted-designations/:channelId/remove",
+  async (context) => {
+    const maintainer = await requireMaintainer(context);
+    if (!maintainer) {
+      return unauthorised(context);
+    }
+
+    const channelId = context.req.param("channelId");
+    if (!isYouTubeChannelId(channelId)) {
+      return context.json({ error: "Invalid YouTube channel ID" }, 400);
+    }
+
+    const input = removalSchema.safeParse(await getJsonBody(context.req.raw));
+    if (!input.success) {
+      return context.json({ error: "Invalid removal reason" }, 400);
+    }
+
+    const removed = await db.transaction(async (transaction) => {
+      const [designation] = await transaction
+        .select({ designationId: trustedDesignations.id })
+        .from(trustedDesignations)
+        .innerJoin(channels, eq(trustedDesignations.channelId, channels.id))
+        .where(
+          and(
+            eq(channels.youtubeChannelId, channelId),
+            eq(trustedDesignations.status, "active"),
+          ),
+        )
+        .limit(1);
+      if (!designation) {
+        return false;
+      }
+
+      const now = new Date();
+      await transaction
+        .update(trustedDesignations)
+        .set({
+          status: "removed",
+          updatedAt: now,
+          updatedByMaintainerId: maintainer.id,
+        })
+        .where(eq(trustedDesignations.id, designation.designationId));
+      await transaction.insert(trustDesignationEvents).values({
+        designationId: designation.designationId,
+        kind: "removed",
+        maintainerId: maintainer.id,
+        snapshot: input.data,
+      });
+      await bumpCatalogueVersion(transaction, now);
+      return true;
+    });
+
+    if (!removed) {
+      return context.json(
+        { error: "Active trusted designation not found" },
+        404,
+      );
     }
 
     return context.json({ status: "removed" });

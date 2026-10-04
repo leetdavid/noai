@@ -9,6 +9,7 @@ import { authRoutes } from "./routes/auth.js";
 import { catalogueRoutes } from "./routes/catalogue.js";
 import { evidenceRoutes } from "./routes/evidence.js";
 import { maintainerRoutes } from "./routes/maintainer.js";
+import { trustRoutes } from "./routes/trust.js";
 
 const configuration = getConfiguration();
 const app = new Hono();
@@ -29,6 +30,7 @@ app.get("/health", async (context) => {
 
 app.route("/", catalogueRoutes);
 app.route("/", evidenceRoutes);
+app.route("/", trustRoutes);
 app.route("/", maintainerRoutes);
 app.route("/", authRoutes);
 

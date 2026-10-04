@@ -3,46 +3,92 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>NoAI filters</title>
+    <title>NoAI - a less sloppier web</title>
+    <link rel="stylesheet" href="./ui.css" />
   </head>
-  <body>
-    <main class="settings-page">
-      <header class="header">
-        <p class="eyebrow">NOAI / FILTERS</p>
-        <h1>Choose what stays out.</h1>
-        <p class="intro">YouTube channels is NoAI's first filter. Future filters will arrive separately and stay off until you choose them.</p>
-      </header>
+  <body class="options-body">
+    <a class="skip-link" href="#settings">Skip to settings</a>
+    <header class="settings-header">
+      <div>
+        <a class="brand" href="https://noai.eslee.io" target="_blank" rel="noopener noreferrer" aria-label="NoAI website">
+          <span class="brand-mark" aria-hidden="true">N</span>NoAI
+        </a>
+        <p class="brand-tagline">NoAI - a less sloppier web</p>
+      </div>
+      <nav aria-label="NoAI links">
+        <a href="https://noai.eslee.io" target="_blank" rel="noopener noreferrer">Visit the website</a>
+        <a href="https://noai.eslee.io/submit" target="_blank" rel="noopener noreferrer">Submit for review</a>
+        <a href="https://noai.eslee.io/submit?kind=allowlist" target="_blank" rel="noopener noreferrer">Whitelist a channel</a>
+      </nav>
+    </header>
+    <main id="settings" class="settings-page">
+      <div class="settings-intro">
+        <p class="eyebrow">Extension settings</p>
+        <h1>Your feed, your choice.</h1>
+        <p class="intro">Keep the channels you enjoy. Leave the rest out. Your personal rules follow your Chrome profile, not the public catalogue.</p>
+      </div>
 
       <section class="filter-section" aria-labelledby="youtube-channels-heading">
-        <p class="eyebrow">ACTIVE FILTER</p>
         <h2 id="youtube-channels-heading">YouTube channels</h2>
-        <p>Removes videos from the public maintainer catalogue, plus any channels you add for yourself.</p>
+        <p>NoAI filters channels from the Maintainer catalogue, plus the ones you hide for yourself. Whitelisted channels are never filtered and never show Hide as AI slop. You can pause catalogue filtering in the extension popup. Your personal rules still apply.</p>
       </section>
 
+      <p id="saved-status" class="saved-status" role="status"></p>
+
       <section class="rule-section" aria-labelledby="personal-designations-heading">
-        <h2 id="personal-designations-heading">Hide a channel for me</h2>
-        <p>Paste a YouTube Channel ID or a URL in the <code>/channel/UC...</code> format.</p>
-        <form id="designation-form" class="channel-form">
-          <label class="visually-hidden" for="designation-channel-id">YouTube Channel ID or URL</label>
-          <input id="designation-channel-id" name="channel" placeholder="UC..." required type="text" />
-          <button type="submit">Hide</button>
-        </form>
-        <ul id="designation-list" class="rule-list"></ul>
+        <div class="rule-description">
+          <span class="rule-marker" aria-hidden="true">-</span>
+          <h2 id="personal-designations-heading">Hide for me</h2>
+          <p>Hide a channel's videos from your YouTube feed. This is a personal designation, just for you. It doesn't add the channel to the public catalogue.</p>
+        </div>
+        <div class="rule-controls">
+          <form id="designation-form" class="channel-form">
+            <label for="designation-channel-id">YouTube Channel ID or channel URL</label>
+            <div class="input-row">
+              <input id="designation-channel-id" name="channel" placeholder="UC... or youtube.com/channel/UC..." required type="text" autocomplete="off" autocapitalize="none" spellcheck="false" aria-describedby="designation-help designation-status" />
+              <button type="submit">Hide for me</button>
+            </div>
+            <p id="designation-help" class="field-help">Use an ID starting with UC or a /channel/UC... link, not an @handle.</p>
+            <p id="designation-status" class="form-status" role="status"></p>
+          </form>
+          <h3 class="list-heading">Hidden for you</h3>
+          <ul id="designation-list" class="rule-list" aria-label="Channels hidden for you" aria-busy="true"><li class="list-message">Loading your hidden channels...</li></ul>
+        </div>
       </section>
 
       <section class="rule-section" aria-labelledby="personal-exemptions-heading">
-        <h2 id="personal-exemptions-heading">Always show a channel</h2>
-        <p>This restores a globally filtered channel only for your Chrome profile.</p>
-        <form id="exemption-form" class="channel-form">
-          <label class="visually-hidden" for="exemption-channel-id">YouTube Channel ID or URL</label>
-          <input id="exemption-channel-id" name="channel" placeholder="UC..." required type="text" />
-          <button type="submit">Show</button>
-        </form>
-        <ul id="exemption-list" class="rule-list"></ul>
+        <div class="rule-description">
+          <span class="rule-marker rule-marker-show" aria-hidden="true">+</span>
+          <h2 id="personal-exemptions-heading">Always show</h2>
+          <p>Keep seeing a channel, even if it's in the public catalogue. This personal exemption takes priority over your other rules and only affects your Chrome profile.</p>
+        </div>
+        <div class="rule-controls">
+          <form id="exemption-form" class="channel-form">
+            <label for="exemption-channel-id">YouTube Channel ID or channel URL</label>
+            <div class="input-row">
+              <input id="exemption-channel-id" name="channel" placeholder="UC... or youtube.com/channel/UC..." required type="text" autocomplete="off" autocapitalize="none" spellcheck="false" aria-describedby="exemption-help exemption-status" />
+              <button type="submit">Always show</button>
+            </div>
+            <p id="exemption-help" class="field-help">Use an ID starting with UC or a /channel/UC... link, not an @handle.</p>
+            <p id="exemption-status" class="form-status" role="status"></p>
+          </form>
+          <h3 class="list-heading">Always shown for you</h3>
+          <ul id="exemption-list" class="rule-list" aria-label="Channels always shown for you" aria-busy="true"><li class="list-message">Loading your always-shown channels...</li></ul>
+        </div>
       </section>
 
-      <p id="saved-status" class="saved-status" aria-live="polite"></p>
+      <aside class="review-note" aria-labelledby="review-heading">
+        <div>
+          <h2 id="review-heading">Want to help the catalogue?</h2>
+          <p>Personal rules stay yours. To suggest a channel for the public catalogue, send an optional evidence submission for a Maintainer to review. To protect a channel you trust, request it for the whitelist instead.</p>
+        </div>
+        <a href="https://noai.eslee.io/submit" target="_blank" rel="noopener noreferrer">Submit for review</a>
+      </aside>
     </main>
+    <footer class="settings-footer">
+      <p>NoAI - a less sloppier web</p>
+      <a href="https://noai.eslee.io" target="_blank" rel="noopener noreferrer">About NoAI</a>
+    </footer>
     <script type="module" src="./options.ts"></script>
   </body>
 </html>

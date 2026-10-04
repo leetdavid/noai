@@ -3,29 +3,48 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>NoAI</title>
+    <title>NoAI - a less sloppier web</title>
+    <link rel="stylesheet" href="./ui.css" />
   </head>
-  <body>
+  <body class="popup-body">
     <main class="panel">
       <header class="header">
-        <p class="eyebrow">NOAI / FILTERS</p>
-        <h1>A quieter web.</h1>
+        <a class="brand" href="https://noai.eslee.io" target="_blank" rel="noopener noreferrer" aria-label="NoAI website">
+          <span class="brand-mark" aria-hidden="true">N</span>NoAI
+        </a>
+        <h1 class="popup-tagline">NoAI - a less sloppier web</h1>
       </header>
 
-      <label class="toggle-row" for="enabled">
-        <span>
-          <strong>Filters</strong>
-          <small id="status">Loading protection status</small>
-        </span>
-        <input id="enabled" type="checkbox" role="switch" />
-      </label>
-
-      <section class="filter-summary" aria-label="Active filter">
-        <p class="eyebrow">ACTIVE FILTER</p>
-        <strong>YouTube channels</strong>
-        <small>Maintainer catalogue and personal rules.</small>
+      <section class="filter-summary" aria-label="YouTube filtering">
+        <label class="toggle-row" for="enabled">
+          <span>
+            <strong id="filter-label">Catalogue filtering</strong>
+            <small id="status" role="status">Checking your settings...</small>
+          </span>
+          <input id="enabled" type="checkbox" role="switch" aria-labelledby="filter-label" aria-describedby="status filter-note" disabled />
+        </label>
+        <p id="filter-note">For YouTube. Your personal rules always apply, except whitelisted channels are never filtered.</p>
       </section>
-      <a class="settings-link" href="options.html" target="_blank">Filter settings</a>
+
+      <section class="blocked-summary" aria-labelledby="blocked-channels-heading">
+        <div class="section-heading">
+          <h2 id="blocked-channels-heading">Recently filtered</h2>
+          <span id="blocked-count" role="status">Loading...</span>
+        </div>
+        <p id="blocked-message" class="activity-message" role="status">Checking this browser's recent activity...</p>
+        <ul id="blocked-list" class="popup-blocked-list" aria-labelledby="blocked-channels-heading" aria-busy="true">
+          <li class="activity-placeholder" aria-hidden="true"><span></span><span></span></li>
+          <li class="activity-placeholder" aria-hidden="true"><span></span><span></span></li>
+        </ul>
+        <p class="privacy-note">Only stored in this browser. Never uploaded.</p>
+      </section>
+
+      <footer class="popup-footer">
+        <a class="settings-link" href="options.html" target="_blank" rel="noopener">
+          Filter settings
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6" /></svg>
+        </a>
+      </footer>
     </main>
     <script type="module" src="./popup.ts"></script>
   </body>

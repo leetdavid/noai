@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "NoAI",
   "version": "0.1.0",
-  "description": "Block low-signal AI-generated content across the web.",
+  "description": "NoAI - a less sloppier web. Quietly filter AI slop, starting with YouTube channels.",
   "permissions": ["storage"],
   "host_permissions": ["https://api.noai.eslee.io/*"],
   "background": {
@@ -10,7 +10,7 @@
     "type": "module"
   },
   "action": {
-    "default_title": "NoAI",
+    "default_title": "NoAI - a less sloppier web",
     "default_popup": "src/popup.html"
   },
   "options_page": "src/options.html",

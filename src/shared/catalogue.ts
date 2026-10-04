@@ -2,11 +2,13 @@ import { isYouTubeChannelId } from "./youtube-channel";
 
 export interface CatalogueSnapshot {
   channelIds: string[];
+  trustedChannelIds: string[];
   version: string;
 }
 
 export const EMPTY_CATALOGUE_SNAPSHOT: CatalogueSnapshot = {
   channelIds: [],
+  trustedChannelIds: [],
   version: "0",
 };
 
@@ -31,13 +33,37 @@ export function parseCatalogueSnapshot(
     return null;
   }
 
-  const { channelIds, version } = value;
+  const { channelIds, trustedChannelIds, version } = value;
   if (typeof version !== "string" || !isChannelIdList(channelIds)) {
+    return null;
+  }
+  if (trustedChannelIds !== undefined && !isChannelIdList(trustedChannelIds)) {
     return null;
   }
 
   return {
     channelIds: [...new Set(channelIds)].sort(),
+    trustedChannelIds: trustedChannelIds
+      ? [...new Set(trustedChannelIds)].sort()
+      : [],
     version,
   };
+}
+
+export function resolveBlockedChannelIds(
+  snapshot: CatalogueSnapshot,
+  personalDesignations: string[],
+  personalExemptions: string[],
+): Set<string> {
+  const blocked = new Set<string>([
+    ...snapshot.channelIds,
+    ...personalDesignations,
+  ]);
+  for (const channelId of personalExemptions) {
+    blocked.delete(channelId);
+  }
+  for (const channelId of snapshot.trustedChannelIds) {
+    blocked.delete(channelId);
+  }
+  return blocked;
 }

@@ -9,16 +9,23 @@ NoAI filters AI slop without making browsing feel like moderation. The first fil
 - `api/drizzle/` contains the PostgreSQL migration history.
 - `web/` is the public NoAI landing page and live catalogue status view.
 
-The extension downloads a compact, versioned Catalogue Snapshot at most once per hour. It receives only active YouTube Channel IDs; evidence, rationales, and Maintainer identities are not distributed to browsers.
+The extension downloads a compact, versioned Catalogue Snapshot at most once per hour. It receives only active YouTube Channel IDs plus whitelisted Trusted Channel IDs; evidence, rationales, and Maintainer identities are not distributed to browsers. Trusted channels are never filtered and never show Hide as AI slop.
 
 ## Development
 
 ```sh
 pnpm install
 pnpm test
+pnpm test:e2e
 pnpm check
 pnpm build
 ```
+
+End-to-end tests use Playwright with a real Chromium against the web dev
+server (`pnpm test:e2e`, config in `playwright.config.ts`, specs in `e2e/`).
+They mock the API at the network boundary, stub Turnstile, and fail on any
+uncaught page error. Install the browser once with
+`npx playwright install chromium`.
 
 To load the extension locally, open `chrome://extensions`, enable **Developer mode**, select **Load unpacked**, and choose `dist` after `pnpm build:extension`.
 
@@ -36,17 +43,23 @@ pnpm --filter @noai/api db:seed-maintainer
 ```json
 {
   "version": "12",
-  "channelIds": ["UCabcdefghijklmnopqrstuv"]
+  "channelIds": ["UCabcdefghijklmnopqrstuv"],
+  "trustedChannelIds": ["UCzyxwvutsrqponmlkjihgfe"]
 }
 ```
 
 `POST /v1/evidence-submissions` accepts anonymous supporting evidence after Turnstile validation and a privacy-preserving daily rate limit. It remains disabled until `TURNSTILE_SECRET_KEY` is configured and never publishes a designation.
+
+`POST /v1/trust-submissions` accepts anonymous whitelist requests after Turnstile validation and the same privacy-preserving daily rate limit. A trusted designation means NoAI never filters the channel and never shows Hide as AI slop for it.
 
 Maintainer routes use GitHub App user authorization and require the corresponding GitHub user ID to be active in the `maintainers` table. Configure `GITHUB_APP_CLIENT_ID`, `GITHUB_APP_CLIENT_SECRET`, `GITHUB_APP_ID`, and `GITHUB_APP_PRIVATE_KEY` on the API service to enable `https://noai.eslee.io/maintain`:
 
 - `GET /v1/maintainer/evidence-submissions`
 - `POST /v1/maintainer/designations`
 - `POST /v1/maintainer/designations/:channelId/remove`
+- `POST /v1/maintainer/trust-submissions/:id/review`
+- `POST /v1/maintainer/trusted-designations`
+- `POST /v1/maintainer/trusted-designations/:channelId/remove`
 
 ## Railway
 
