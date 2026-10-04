@@ -5,9 +5,11 @@ import { isYouTubeChannelId } from "./youtube-channel";
 export const CATALOGUE_REQUEST_KIND = "noai:catalogue-request";
 export const CATALOGUE_RESPONSE_KIND = "noai:catalogue-response";
 export const BLOCKED_CHANNEL_KIND = "noai:blocked-channel";
+export const CATALOGUE_CACHE_KEY = "catalogue-cache";
 
 export interface CatalogueRequest {
   kind: typeof CATALOGUE_REQUEST_KIND;
+  forceRefresh?: boolean;
 }
 
 export interface CatalogueResponse {
@@ -27,7 +29,12 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 export function isCatalogueRequest(value: unknown): value is CatalogueRequest {
-  return isRecord(value) && value.kind === CATALOGUE_REQUEST_KIND;
+  return (
+    isRecord(value) &&
+    value.kind === CATALOGUE_REQUEST_KIND &&
+    (value.forceRefresh === undefined ||
+      typeof value.forceRefresh === "boolean")
+  );
 }
 
 export function isCatalogueResponse(

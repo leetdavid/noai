@@ -5,13 +5,14 @@ import {
   parseCatalogueSnapshot,
 } from "./shared/catalogue";
 import {
+  CATALOGUE_CACHE_KEY,
   CATALOGUE_RESPONSE_KIND,
   isBlockedChannelMessage,
   isCatalogueRequest,
 } from "./shared/messages";
 
 const catalogueUrl = "https://api.noai.eslee.io/v1/catalogue";
-const cacheKey = "catalogue-cache";
+const cacheKey = CATALOGUE_CACHE_KEY;
 const refreshIntervalMs = 60 * 60 * 1000;
 
 let catalogueRequest: Promise<CatalogueSnapshot> | null = null;
@@ -68,9 +69,13 @@ async function fetchCatalogue(): Promise<CatalogueSnapshot> {
   return snapshot;
 }
 
-async function getCatalogue(): Promise<CatalogueSnapshot> {
+async function getCatalogue(forceRefresh = false): Promise<CatalogueSnapshot> {
   const cached = await getCachedCatalogue();
-  if (cached && Date.now() - cached.fetchedAt < refreshIntervalMs) {
+  if (
+    !forceRefresh &&
+    cached &&
+    Date.now() - cached.fetchedAt < refreshIntervalMs
+  ) {
     return cached.snapshot;
   }
 
@@ -97,7 +102,7 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     return;
   }
 
-  void getCatalogue().then((snapshot) => {
+  void getCatalogue(message.forceRefresh === true).then((snapshot) => {
     sendResponse({
       kind: CATALOGUE_RESPONSE_KIND,
       snapshot,

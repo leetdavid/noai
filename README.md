@@ -9,7 +9,7 @@ NoAI filters AI slop without making browsing feel like moderation. The first fil
 - `api/drizzle/` contains the PostgreSQL migration history.
 - `web/` is the public NoAI landing page and live catalogue status view.
 
-The extension downloads a compact, versioned Catalogue Snapshot at most once per hour. It receives only active YouTube Channel IDs plus whitelisted Trusted Channel IDs; evidence, rationales, and Maintainer identities are not distributed to browsers. Trusted channels are never filtered and never show Hide as AI slop.
+The extension downloads a compact, versioned Catalogue Snapshot at most once per hour, plus a per-channel revalidation at most once per hour when viewing a channel page. It receives only active YouTube Channel IDs plus whitelisted Trusted Channel IDs; evidence, rationales, and Maintainer identities are not distributed to browsers. Trusted channels are never filtered and never show Hide as AI slop.
 
 ## Development
 

@@ -4,6 +4,7 @@ import {
 } from "./shared/catalogue";
 import {
   BLOCKED_CHANNEL_KIND,
+  CATALOGUE_CACHE_KEY,
   CATALOGUE_REQUEST_KIND,
   isCatalogueResponse,
 } from "./shared/messages";
@@ -24,6 +25,8 @@ let trustedChannelIds = new Set<string>();
 let personalDesignationIds = new Set<string>();
 let refreshVersion = 0;
 let filteringScheduled = false;
+const revalidationIntervalMs = 60 * 60 * 1000;
+const lastRevalidatedAt = new Map<string, number>();
 
 function installHiddenStyle(): void {
   if (document.getElementById(hiddenStyleId)) {
@@ -144,6 +147,42 @@ function getWhitelistSubmissionUrl(channelId: string): string {
   return url.toString();
 }
 
+function appendChannelIndicator(action: HTMLElement, text: string): void {
+  const indicator = document.createElement("span");
+  indicator.dataset.noaiChannelIndicator = "";
+  indicator.textContent = text;
+  action.append(indicator);
+}
+
+function appendHideButton(action: HTMLElement, channelId: string): void {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.textContent = "Hide as AI slop";
+  button.addEventListener("click", () => {
+    button.disabled = true;
+    void addPersonalDesignation(channelId, getCurrentChannelName())
+      .then(refreshFilters)
+      .catch(() => {
+        button.disabled = false;
+      });
+  });
+  action.append(button);
+}
+
+function appendChannelLinkButton(
+  action: HTMLElement,
+  label: string,
+  url: string,
+): void {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.textContent = label;
+  button.addEventListener("click", () => {
+    window.open(url, "_blank", "noopener");
+  });
+  action.append(button);
+}
+
 function renderChannelAction(): void {
   const channelId = document.documentElement.getAttribute(
     YOUTUBE_CURRENT_CHANNEL_ATTRIBUTE,
@@ -175,52 +214,32 @@ function renderChannelAction(): void {
   action.dataset.state = state;
 
   if (isTrusted) {
-    const indicator = document.createElement("span");
-    indicator.dataset.noaiChannelIndicator = "";
-    indicator.textContent = "NoAI: trusted channel";
-    action.append(indicator);
+    appendChannelIndicator(action, "NoAI: trusted channel");
   } else {
     if (isSlopChannel) {
-      const indicator = document.createElement("span");
-      indicator.dataset.noaiChannelIndicator = "";
-      indicator.textContent = "NoAI: AI slop channel";
-      action.append(indicator);
+      appendChannelIndicator(action, "NoAI: AI slop channel");
     }
 
     if (!isFiltered) {
-      const button = document.createElement("button");
-      button.type = "button";
-      button.textContent = "Hide as AI slop";
-      button.addEventListener("click", () => {
-        button.disabled = true;
-        void addPersonalDesignation(channelId, getCurrentChannelName())
-          .then(refreshFilters)
-          .catch(() => {
-            button.disabled = false;
-          });
-      });
-      action.append(button);
+      appendHideButton(action, channelId);
     }
   }
 
   if (!isTrusted && !catalogueChannelIds.has(channelId)) {
-    const submitButton = document.createElement("button");
-    submitButton.type = "button";
-    submitButton.textContent = "Submit for review";
-    submitButton.addEventListener("click", () => {
-      window.open(getReviewSubmissionUrl(channelId), "_blank", "noopener");
-    });
-    action.append(submitButton);
+    appendChannelLinkButton(
+      action,
+      "Submit for review",
+      getReviewSubmissionUrl(channelId),
+    );
   }
 
   if (!isTrusted) {
-    const whitelistButton = document.createElement("button");
-    whitelistButton.type = "button";
-    whitelistButton.textContent = "Submit for whitelist";
-    whitelistButton.addEventListener("click", () => {
-      window.open(getWhitelistSubmissionUrl(channelId), "_blank", "noopener");
-    });
-    action.append(whitelistButton);
+    maybeRevalidateChannel(channelId);
+    appendChannelLinkButton(
+      action,
+      "Submit for whitelist",
+      getWhitelistSubmissionUrl(channelId),
+    );
   }
 
   target.append(action);
@@ -287,10 +306,11 @@ function scheduleFilter(): void {
   });
 }
 
-async function getCatalogue() {
+async function getCatalogue(forceRefresh = false) {
   try {
     const response: unknown = await chrome.runtime.sendMessage({
       kind: CATALOGUE_REQUEST_KIND,
+      ...(forceRefresh ? { forceRefresh: true } : {}),
     });
     return isCatalogueResponse(response)
       ? response.snapshot
@@ -298,6 +318,22 @@ async function getCatalogue() {
   } catch {
     return EMPTY_CATALOGUE_SNAPSHOT;
   }
+}
+
+function maybeRevalidateChannel(channelId: string): void {
+  if (trustedChannelIds.has(channelId)) {
+    return;
+  }
+
+  const lastRevalidated = lastRevalidatedAt.get(channelId) ?? 0;
+  if (Date.now() - lastRevalidated < revalidationIntervalMs) {
+    return;
+  }
+
+  lastRevalidatedAt.set(channelId, Date.now());
+  void getCatalogue(true).then(() => {
+    void refreshFilters();
+  });
 }
 
 async function refreshFilters(): Promise<void> {
@@ -337,8 +373,11 @@ observer.observe(document.documentElement, {
   childList: true,
   subtree: true,
 });
-chrome.storage.onChanged.addListener((_changes, areaName) => {
+chrome.storage.onChanged.addListener((changes, areaName) => {
   if (areaName === "sync") {
+    void refreshFilters();
+  }
+  if (areaName === "local" && CATALOGUE_CACHE_KEY in changes) {
     void refreshFilters();
   }
 });
